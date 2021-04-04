@@ -1,8 +1,4 @@
-# A guide for manually setting up zRAM on Linux.
-
-
-
-## zRAM
+# zRAM
 zRAM is a very neat and useful feature of Linux, it is a compressed swap right in your RAM. Because it's compressed, same amount of data takes up less space, so you can store more, for example 1024 MB of data sended to RAM can take up only less than 512 MB in zRAM, which gives you ability to store more data with the same amount of physical RAM. And because that swap is stored directly in your RAM, performance is near to the speed of RAM, but not the same because you spend a little bit of CPU usage to compress/decompress data in zRAM, and still it is way faster than a swap on any SSD or HDD.
 It is recommended to set-up zRAM to take up 50% of your physical RAM in total and have as many zRAM partitions as your amount of CPU cores.
 
