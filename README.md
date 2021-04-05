@@ -43,13 +43,14 @@ modprobe zram num_devices=1
 
 # Replace 4096 with the amount of your physical RAM in megabytes.
 totalmem=4096
-mem=$(((totalmem / 2 / ${NRDEVICES}) * 1024 * 1024))
+mem=$(((totalmem / 2) * 1024 * 1024))
 
 echo $mem > /sys/block/zram0/disksize
 mkswap /dev/zram0
 swapon -p 75 /dev/zram0
 ```
 
+`-p 75` sets swap priority of 75 to zRAM over default -2 for disk swap, which means disk swap (if any) will not be used until zRAM swap is full.
 Change 4096 in line `totalmem=4096` to the size of your RAM in megabytes, as said in the comment. Now create zram-stop.sh with the following code in it.
 
 `$ sudo nano /usr/local/bin/zram-stop.sh`
@@ -113,6 +114,7 @@ vm.page-cluster = 0
 ```
 
 `vm.swappiness = 80` sets swappiness to 80 rather than default 60 because zRAM is fast and we can use it more often than the disk swap, higher swappiness means more often swap usage, so you could benefit from higher swappiness because you use zRAM.
+
 `vm.page-cluster = 0` controls the number of pages up to which consecutive pages are read in from swap in a single attempt. Page cluster of 0 sets that to 1 page per attempt, which arrives less latency and zRAM could benefit from it.
 
 
