@@ -54,7 +54,7 @@ done
 
 Change "2" in the `NRDEVICES=2` line according to your CPU cores amount.
 Also you need to change "4096" value in the `totalmem=4096` line to the amount of your RAM in megabytes (4096 MB = 4 GB of RAM). This value will then be divided in half and by the amount of your CPU cores and translated to bytes in order to split half of your RAM size for all of your zram devices.
-`echo zstd` sets zstd as compression algorithm for zram, it has the best comression ratio which is especially useful in low RAM conditions and also it has the best text compression which is useful while working with loads of text like in a word processor program.
+`echo zstd` sets zstd as compression algorithm for zram, it has the best comression ratio which is especially useful in low RAM conditions and also it has the best text compression which is useful while working with loads of text like in a word processor program. Other popular compression algorithms for zram are lzo-rle and lz4, lz4 has the fastest compression and decompression speed and maintains compression ratio near to lzo-rle which has some optimizations but both are inferior in compression ratio compared to zstd. In my usage, neither lzo-rle or lz4 gave any speed boost in real-life situations, neither on a slow more than a decade old PC or on a powerful machine, so zstd is the way to go here since it provides more compression which leads to more space to store data.
 `-p 75` sets swap priority of 75 to zram for computer to use it first until all zram devices are full, because disk swap has default priority of -2 and will not be used until zram is full.
 Now create "zram-stop.sh" script for automatic zram deinitialization:
 
@@ -136,11 +136,11 @@ vm.page-cluster=0
 
 `vm.vfs_cache_pressure=500` tells system to store less cache in your RAM.
 
-`vm.swappiness = 100` sets swappiness to 100 for your system to start using zram earlier.
+`vm.swappiness=100` sets swappiness to 100 for your system to start using zram earlier.
 
 `vm.dirty_background_ratio=1` and `vm.dirty_ratio=50` controls the flow of "dirty" pages to swap.
 
-`vm.page-cluster = 0` controls the number of pages up to which consecutive pages are read in from swap in a single attempt. Page cluster of 0 limits that to 1 page per attempt, which arrives lower latency.
+`vm.page-cluster=0` controls the number of pages up to which consecutive pages are read in from swap in a single attempt. Page cluster of 0 limits that to 1 page per attempt, which arrives lower latency.
 
 
 
