@@ -17,11 +17,11 @@ First of all, you'll need to change GRUB settings to initialize zram at boot. Fo
 
 `$ sudo nano /etc/default/grub`
 
-Then, change the following line by adding `zram.num_devices=2` at the end, where "2" is the amount of CPU cores you have, that will initialize as much zram devices as your CPU cores, this can lead to a performance boost in multithreading or NUMA.
+Then, change the following line by adding `zram.num_devices=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')` at the end.
 For example, you will have that line in the end:
 
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash zram.num_devices=2"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash zram.num_devices=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')"
 ```
 
 To exit editor, press "Ctrl + X", then press "Y" and then "Enter".
@@ -43,8 +43,7 @@ And then copy the following code in it while changing variables when said to acc
 ```
 #!/bin/bash
 
-# Replace 2 with the amount of your CPU cores.
-NRDEVICES=2
+NRDEVICES=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')
 
 modprobe zram num_devices=${NRDEVICES}
 
@@ -61,9 +60,11 @@ for i in $(seq ${NRDEVICES}); do
 done
 ```
 
-Change "2" in the `NRDEVICES=2` line according to your CPU cores amount.
-Also you need to change "4096" value in the `totalmem=4096` line to the amount of your RAM in megabytes (4096 MB = 4 GB of RAM). This value will then be divided in half and by the amount of your CPU cores and translated to bytes in order to split half of your RAM size for all of your zram devices.
+Change "4096" value in the `totalmem=4096` line to the amount of your RAM in megabytes (4096 MB = 4 GB of RAM).
+This value will then be divided in half and by the amount of your CPU cores and translated to bytes in order to split half of your RAM size for all of your zram devices.
+
 `echo zstd` sets zstd as compression algorithm for zram, it has the best comression ratio which is especially useful in low RAM conditions and also it has the best text compression which is useful while working with loads of text like in a word processor program. Other popular compression algorithms for zram are lzo-rle and lz4, lz4 has the fastest compression and decompression speed and maintains compression ratio near to lzo-rle which has some optimizations but both are inferior in compression ratio compared to zstd. In my usage, neither lzo-rle or lz4 gave any speed boost in real-life situations, neither on a slow more than a decade old PC or on a powerful machine, so zstd is the way to go here since it provides more compression which leads to more space to store data.
+
 `-p 75` sets swap priority of 75 to zram for computer to use it first until all zram devices are full, because disk swap has default priority of -2 and will not be used until zram is full.
 Now create "zram-stop.sh" script for automatic zram deinitialization:
 
@@ -74,8 +75,7 @@ And paste following code in it:
 ```
 #!/bin/bash
 
-# Replace 2 with the amount of your CPU cores.
-NRDEVICES=2
+NRDEVICES=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')
 
 for i in $(seq ${NRDEVICES}); do
   DEVNUMBER=$((i - 1))
@@ -86,8 +86,7 @@ for i in $(seq ${NRDEVICES}); do
 done
 ```
 
-Again change the "2" in the `NRDEVICES=2` line to your amount of CPU cores.
-You've successfully created scripts for initialization of zram! A couple more steps to go.
+You've successfully created scripts for initialization and deinitialization of zram! A couple more steps to go.
 
 
 
