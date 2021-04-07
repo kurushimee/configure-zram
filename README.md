@@ -3,6 +3,15 @@ Sometimes, you don't have enough RAM to feed everything running on your computer
 
 
 
+## Prerequisite
+You may not need this guide if you're running for example Garuda Linux or Fedora 33 and higher, since there's zram turned on by default. You could use some tricks from this guide like swap optimizations but Fedora for example has zram-generator preinstalled which handles zram in a different way, so you'll need to find that by yourself.
+To check if you have zram up and running already, type this command in terminal:
+
+`$ zramctl`
+
+
+
+
 ## Setting up GRUB
 First of all, you'll need to change GRUB settings to initialize zram at boot. For that, copy & paste that command in your terminal:
 
