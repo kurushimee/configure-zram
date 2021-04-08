@@ -38,7 +38,7 @@ Create "zram-start.sh" script for automatic zram initialization:
 
 `$ sudo nano /usr/local/bin/zram-start.sh`
 
-And then copy the following code in it while changing variables when said to according to your computer specifications:
+And then copy the following code in it while changing variable `mem=8G` following comment (text after "#"):
 
 ```
 #!/bin/bash
@@ -53,6 +53,8 @@ echo $mem > /sys/block/zram0/disksize
 mkswap /dev/zram0
 swapon -p 75 /dev/zram0
 ```
+
+I recommend going with the size of your RAM for zram device if you're running on 16 GB of RAM and lower, and only 16 GB size of zram if you have more RAM, usually you would never need more than that. You could also not use zram at all with more than 16 GB of RAM at all, since it is slower than RAM which you have enough of, and going without swap optimizations, but with small disk swap for emergency and swappiness set from 1 to 10 to not use it until RAM is fully spent.
 
 `echo zstd` sets zstd as compression algorithm for zram, it has the best comression ratio which is especially useful in low RAM conditions and also it has the best text compression which is useful while working with loads of text like in a word processor program. Other popular compression algorithms for zram are lzo-rle and lz4, lz4 has the fastest compression and decompression speed and maintains compression ratio near to lzo-rle which has some optimizations but both are inferior in compression ratio compared to zstd. In my usage, neither lzo-rle or lz4 gave any speed boost in real-life situations, neither on a slow more than a decade old PC or on a powerful machine, so zstd is the way to go here since it provides more compression which leads to more space to store data.
 
@@ -147,7 +149,6 @@ To check that, you can run "zramctl":
 Example output could be:
 
 ```
-NAME       ALGORITHM DISKSIZE   DATA COMPR TOTAL STREAMS MOUNTPOINT
-/dev/zram1 zstd            1G 144.9M 24.7M 31.4M       2 [SWAP]
-/dev/zram0 zstd            1G 146.5M   25M 31.4M       2 [SWAP]
+NAME       ALGORITHM DISKSIZE DATA COMPR TOTAL STREAMS MOUNTPOINT
+/dev/zram0 zstd            8G   4K   58B    4K      12 [SWAP]
 ```
