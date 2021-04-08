@@ -17,11 +17,11 @@ First of all, you'll need to change GRUB settings to initialize zram at boot. Fo
 
 `$ sudo nano /etc/default/grub`
 
-Then, change the following line by adding `zram.num_devices=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')` at the end.
+Then, change the following line by adding `zram.num_devices=1` at the end.
 For example, you will have that line in the end:
 
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash zram.num_devices=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash zram.num_devices=1"
 ```
 
 To exit editor, press "Ctrl + X", then press "Y" and then "Enter".
@@ -43,25 +43,16 @@ And then copy the following code in it while changing variables when said to acc
 ```
 #!/bin/bash
 
-NRDEVICES=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')
+modprobe zram num_devices=1
 
-modprobe zram num_devices=${NRDEVICES}
+# Replace "8G" with the amount of your RAM in gigabytes, for example "4G", or in megabytes, for example "512M".
+mem=8G
 
-# Replace 4096 with the amount of your physical RAM in megabytes.
-totalmem=4096
-mem=$(((totalmem / 2 / ${NRDEVICES}) * 1024 * 1024))
-
-for i in $(seq ${NRDEVICES}); do
-  DEVNUMBER=$((i - 1))
-  echo zstd > /sys/block/zram${DEVNUMBER}/comp_algorithm
-  echo $mem > /sys/block/zram${DEVNUMBER}/disksize
-  mkswap /dev/zram${DEVNUMBER}
-  swapon -p 75 /dev/zram${DEVNUMBER}
-done
+echo zstd > /sys/block/zram0/comp_algorithm
+echo $mem > /sys/block/zram0/disksize
+mkswap /dev/zram0
+swapon -p 75 /dev/zram0
 ```
-
-Change "4096" value in the `totalmem=4096` line to the amount of your RAM in megabytes (4096 MB = 4 GB of RAM).
-This value will then be divided in half and by the amount of your CPU cores and translated to bytes in order to split half of your RAM size for all of your zram devices.
 
 `echo zstd` sets zstd as compression algorithm for zram, it has the best comression ratio which is especially useful in low RAM conditions and also it has the best text compression which is useful while working with loads of text like in a word processor program. Other popular compression algorithms for zram are lzo-rle and lz4, lz4 has the fastest compression and decompression speed and maintains compression ratio near to lzo-rle which has some optimizations but both are inferior in compression ratio compared to zstd. In my usage, neither lzo-rle or lz4 gave any speed boost in real-life situations, neither on a slow more than a decade old PC or on a powerful machine, so zstd is the way to go here since it provides more compression which leads to more space to store data.
 
@@ -75,15 +66,10 @@ And paste following code in it:
 ```
 #!/bin/bash
 
-NRDEVICES=$(grep -c ^processor /proc/cpuinfo | sed 's/^0$/1/')
-
-for i in $(seq ${NRDEVICES}); do
-  DEVNUMBER=$((i - 1))
-  swapoff /dev/zram${DEVNUMBER}
-  echo 1 > /sys/block/zram${DEVNUMBER}/reset
-  sleep .5
-  modprobe -r zram
-done
+swapoff /dev/zram0
+echo 1 > /sys/block/zram0/reset
+sleep .5
+modprobe -r zram
 ```
 
 You've successfully created scripts for initialization and deinitialization of zram! A couple more steps to go.
